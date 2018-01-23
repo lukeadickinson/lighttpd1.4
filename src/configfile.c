@@ -46,25 +46,6 @@ static void config_warn_authn_module (server *srv, const char *module) {
 }
 #endif
 
-#if defined HAVE_LIBSSL && defined HAVE_OPENSSL_SSL_H
-static void config_warn_openssl_module (server *srv) {
-	for (size_t i = 0; i < srv->config_context->used; ++i) {
-		const data_config *config = (data_config const*)srv->config_context->data[i];
-		for (size_t j = 0; j < config->value->used; ++j) {
-			data_unset *du = config->value->data[j];
-			if (0 == strncmp(du->key->ptr, "ssl.", sizeof("ssl.")-1)) {
-				/* mod_openssl should be loaded after mod_extforward */
-				data_string *ds = data_string_init();
-				buffer_copy_string_len(ds->value, CONST_STR_LEN("mod_openssl"));
-				array_insert_unique(srv->srvconf.modules, (data_unset *)ds);
-				log_error_write(srv, __FILE__, __LINE__, "S", "Warning: please add \"mod_openssl\" to server.modules list in lighttpd.conf.  A future release of lighttpd 1.4.x *will not* automatically load mod_openssl and lighttpd *will not* use SSL/TLS where your lighttpd.conf contains ssl.* directives");
-				return;
-			}
-		}
-	}
-}
-#endif
-
 static int config_insert(server *srv) {
 	size_t i;
 	int ret = 0;
@@ -348,14 +329,6 @@ static int config_insert(server *srv) {
 					"unexpected value for mimetype.assign; expected list of \"ext\" => \"mimetype\"");
 		}
 
-#if !(defined HAVE_LIBSSL && defined HAVE_OPENSSL_SSL_H)
-		if (s->ssl_enabled) {
-			log_error_write(srv, __FILE__, __LINE__, "s",
-					"ssl support is missing, recompile with --with-openssl");
-			ret = HANDLER_ERROR;
-			break;
-		}
-#endif
 	}
 
 	{
@@ -472,9 +445,6 @@ static int config_insert(server *srv) {
 		}
 
 		if (append_mod_openssl) {
-		      #if defined HAVE_LIBSSL && defined HAVE_OPENSSL_SSL_H
-			config_warn_openssl_module(srv);
-		      #endif
 		}
 
 		/* mod_auth.c,http_auth.c auth backends were split into separate modules

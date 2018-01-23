@@ -28,13 +28,6 @@ documentation and/or software.
 
 #include "md5.h"
 
-#if 0 /* Note: not defined here or in lighttpd local "md5.h" */
-#if defined HAVE_LIBSSL && defined HAVE_OPENSSL_SSL_H
-#define USE_OPENSSL_CRYPTO
-#endif
-#endif
-
-#ifndef USE_OPENSSL_CRYPTO
 #include <string.h>
 
 /* Constants for MD5Transform routine.
@@ -337,5 +330,4 @@ static void MD5_memset (POINTER output, int value, unsigned int len)
   for (i = 0; i < len; i++)
  ((char *)output)[i] = (char)value;
 }
-#endif
 #endif

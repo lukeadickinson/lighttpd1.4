@@ -2,12 +2,6 @@
 #define INCLUDED_ALGO_SHA1_H
 #include "first.h"
 
-#if defined HAVE_LIBSSL && defined HAVE_OPENSSL_SSL_H
-
-#include <openssl/sha.h>
-
-#else
-
 /*
  * sha.h
  *
@@ -78,8 +72,6 @@ unsigned char *SHA1();
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif
 
 #endif

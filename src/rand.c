@@ -14,13 +14,6 @@
 #include <time.h>
 #include <unistd.h>
 
-#if defined HAVE_LIBSSL && defined HAVE_OPENSSL_SSL_H
-#define USE_OPENSSL_CRYPTO
-#endif
-#ifdef USE_OPENSSL_CRYPTO
-#include <openssl/opensslv.h> /* OPENSSL_VERSION_NUMBER */
-#include <openssl/rand.h>
-#endif
 #ifdef HAVE_GETENTROPY
 #include <sys/random.h>
 #endif
@@ -161,10 +154,6 @@ static void li_rand_init (void)
   #ifdef HAVE_SRANDOM
     srandom(u); /*(initialize just in case random() used elsewhere)*/
   #endif
-  #ifdef USE_OPENSSL_CRYPTO
-    RAND_poll();
-    RAND_seed(xsubi, (int)sizeof(xsubi));
-  #endif
 }
 
 void li_rand_reseed (void)
@@ -176,12 +165,6 @@ int li_rand_pseudo (void)
 {
     /* randomness *is not* cryptographically strong */
     /* (attempt to use better mechanisms to replace the more portable rand()) */
-  #ifdef USE_OPENSSL_CRYPTO /* (openssl 1.1.0 deprecates RAND_pseudo_bytes()) */
-  #if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
-    int i;
-    if (-1 != RAND_pseudo_bytes((unsigned char *)&i, sizeof(i))) return i;
-  #endif
-  #endif
     if (!li_rand_inited) li_rand_init();
   #ifdef HAVE_ARC4RANDOM_BUF
     return (int)arc4random();
@@ -206,12 +189,6 @@ void li_rand_pseudo_bytes (unsigned char *buf, int num)
 
 int li_rand_bytes (unsigned char *buf, int num)
 {
-  #ifdef USE_OPENSSL_CRYPTO
-    int rc = RAND_bytes(buf, num);
-    if (-1 != rc) {
-        return rc;
-    }
-  #endif
     if (1 == li_rand_device_bytes(buf, num)) {
         return 1;
     }
@@ -225,8 +202,5 @@ int li_rand_bytes (unsigned char *buf, int num)
 
 void li_rand_cleanup (void)
 {
-  #ifdef USE_OPENSSL_CRYPTO
-    RAND_cleanup();
-  #endif
     safe_memclear(xsubi, sizeof(xsubi));
 }

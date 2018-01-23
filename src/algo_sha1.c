@@ -1,12 +1,6 @@
 #include "first.h"
 typedef int innocuous_typedef_to_quiet_empty_translation_unit_compiler_warning;
 
-#if defined HAVE_LIBSSL && defined HAVE_OPENSSL_SSL_H
-#define USE_OPENSSL_CRYPTO
-#endif
-
-#ifndef USE_OPENSSL_CRYPTO
-
 #include "sys-endian.h"
 #include "algo_sha1.h"
 
@@ -180,5 +174,3 @@ unsigned char *SHA1(const unsigned char *d, size_t n, unsigned char *md) {
     SHA1_Final(md, &ctx);
     return md;
 }
-
-#endif

@@ -10,15 +10,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if defined HAVE_LIBSSL && defined HAVE_OPENSSL_SSL_H
-#define USE_OPENSSL_CRYPTO
-#endif
-
-#ifdef USE_OPENSSL_CRYPTO
-#include <openssl/evp.h>
-#include <openssl/hmac.h>
-#endif
-
 #include "md5.h"
 
 #define HASHLEN 16
@@ -186,48 +177,8 @@ static int secdl_verify_mac(server *srv, plugin_config *config, const char* prot
 			return (32 == maclen) && const_time_memeq(mac, hexmd5, 32);
 		}
 	case SECDL_HMAC_SHA1:
-#ifdef USE_OPENSSL_CRYPTO
-		{
-			unsigned char digest[20];
-			char base64_digest[27];
-
-			if (NULL == HMAC(
-					EVP_sha1(),
-					(unsigned char const*) CONST_BUF_LEN(config->secret),
-					(unsigned char const*) protected_path, strlen(protected_path),
-					digest, NULL)) {
-				log_error_write(srv, __FILE__, __LINE__, "s",
-					"hmac-sha1: HMAC() failed");
-				return 0;
-			}
-
-			li_to_base64_no_padding(base64_digest, 27, digest, 20, BASE64_URL);
-
-			return (27 == maclen) && const_time_memeq(mac, base64_digest, 27);
-		}
-#endif
 		break;
 	case SECDL_HMAC_SHA256:
-#ifdef USE_OPENSSL_CRYPTO
-		{
-			unsigned char digest[32];
-			char base64_digest[43];
-
-			if (NULL == HMAC(
-					EVP_sha256(),
-					(unsigned char const*) CONST_BUF_LEN(config->secret),
-					(unsigned char const*) protected_path, strlen(protected_path),
-					digest, NULL)) {
-				log_error_write(srv, __FILE__, __LINE__, "s",
-					"hmac-sha256: HMAC() failed");
-				return 0;
-			}
-
-			li_to_base64_no_padding(base64_digest, 43, digest, 32, BASE64_URL);
-
-			return (43 == maclen) && const_time_memeq(mac, base64_digest, 43);
-		}
-#endif
 		break;
 	}
 
@@ -329,13 +280,11 @@ SETDEFAULTS_FUNC(mod_secdownload_set_defaults) {
 					algorithm);
 				buffer_free(algorithm);
 				return HANDLER_ERROR;
-#ifndef USE_OPENSSL_CRYPTO
 			case SECDL_HMAC_SHA1:
 			case SECDL_HMAC_SHA256:
 				log_error_write(srv, __FILE__, __LINE__, "sb",
 					"unsupported secdownload.algorithm:",
 					algorithm);
-#endif
 			default:
 				break;
 			}
