@@ -13,7 +13,7 @@
 
 #include "base.h"
 #include "log.h"
-
+#include "socktls.h"
 
 unsigned short sock_addr_get_port (const sock_addr *saddr)
 {
@@ -398,7 +398,7 @@ int sock_addr_from_str_hints(server *srv, sock_addr *saddr, socklen_t *len, cons
             memset(&hints, 0, sizeof(hints));
             hints.ai_family   = AF_UNSPEC;
             hints.ai_socktype = SOCK_STREAM;
-            hints.ai_protocol = IPPROTO_TCP;
+            hints.ai_protocol = IPPROTO_TLS;
 
             if (0 != (r = getaddrinfo(str, NULL, &hints, &res))) {
                 log_error_write(srv, __FILE__, __LINE__,
@@ -440,7 +440,7 @@ int sock_addr_from_str_hints(server *srv, sock_addr *saddr, socklen_t *len, cons
 
             hints.ai_family   = AF_INET6;
             hints.ai_socktype = SOCK_STREAM;
-            hints.ai_protocol = IPPROTO_TCP;
+            hints.ai_protocol = IPPROTO_TLS;
 
             if (0 != (r = getaddrinfo(str, NULL, &hints, &res))) {
                 hints.ai_family = AF_INET;
@@ -489,7 +489,7 @@ int sock_addr_from_str_hints(server *srv, sock_addr *saddr, socklen_t *len, cons
             memset(&hints, 0, sizeof(hints));
             hints.ai_family   = AF_INET;
             hints.ai_socktype = SOCK_STREAM;
-            hints.ai_protocol = IPPROTO_TCP;
+            hints.ai_protocol = IPPROTO_TLS;
 
             if (0 != (r = getaddrinfo(str, NULL, &hints, &res))) {
                 log_error_write(srv, __FILE__, __LINE__,

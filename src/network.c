@@ -20,6 +20,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
+#include "socktls.h"
 
 void
 network_accept_tcp_nagle_disable (const int fd)
@@ -277,7 +278,7 @@ static int network_server_init(server *srv, buffer *host_token, size_t sidx, int
 	} else
 #endif
 	{
-		if (-1 == (srv_socket->fd = fdevent_socket_nb_cloexec(family, SOCK_STREAM, IPPROTO_TCP))) {
+		if (-1 == (srv_socket->fd = fdevent_socket_nb_cloexec(family, SOCK_STREAM, IPPROTO_TLS))) {
 			log_error_write(srv, __FILE__, __LINE__, "ss", "socket failed:", strerror(errno));
 			return -1;
 		}
